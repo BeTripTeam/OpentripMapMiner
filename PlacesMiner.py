@@ -15,16 +15,17 @@ class PlacesMiner:
         
         places = self.get_places(lat_min, lat_max, lon_min, lon_max)
         for place in places:
-            p = self.get_place_info(place.get('properties').get('xid'))
-            pc = PostCluster(Point(p.get('point', {}).get('lat'), p.get('point', {}).get('lon')), [])
-            pc.set_category(p.get("kinds", ""))
-            pc.name = p.get("name")
-            pc.descr = [p.get('info', {}).get('descr', '')]
-            pc.image_url = p.get('image', '')
-            res.append(pc)
+            if place.get('properties').get('name'):
+                p = self.get_place_info(place.get('properties').get('xid'))
+                pc = PostCluster(Point(p.get('point', {}).get('lat'), p.get('point', {}).get('lon')), [])
+                pc.set_category(p.get("kinds", ""))
+                pc.name = p.get("name")
+                pc.descr = [p.get('info', {}).get('descr', '')]
+                pc.image_url = p.get('image', '')
+                res.append(pc)
         return res
 
-    def mk_cell(p: Point, r):
+    def mk_cell(self, p: Point, r=20):
         deg_per_km = 0.0089932036372453797
         r_rad = deg_per_km * r
         return p.latitude - r_rad, p.latitude + r_rad, p.longitude - r_rad, p.longitude + r_rad
@@ -104,6 +105,11 @@ class PlacesMiner:
         url = self.base_url + \
               f"/xid" \
               f"/{xid}" \
-              f"&apikey={self.api_key}"
+              f"?apikey={self.api_key}"
         res = requests.get(url).json()
         return res
+    
+
+pm = PlacesMiner()
+places = pm.get_paces_near(Point(59.9390095,29.5303098))
+print(places)
